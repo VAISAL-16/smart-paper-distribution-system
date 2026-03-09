@@ -3,33 +3,37 @@ import { Button } from "@mui/material";
 import { toast } from "sonner";
 import { addAuditLog } from "../utils/auditLogger";
 import { addNotification } from "../utils/notificationService";
+import { getDbValue, setDbValue } from "../utils/dbStore";
 
 function AdminPaperVerification() {
   const [papers, setPapers] = useState([]);
 
   useEffect(() => {
-    const stored =
-      JSON.parse(localStorage.getItem("examPapers")) || [];
-    setPapers(stored);
+    const loadPapers = async () => {
+      const stored = await getDbValue("examPapers", []);
+      setPapers(stored);
+    };
+
+    loadPapers();
   }, []);
 
-  const updateStorage = (updated) => {
+  const updateStorage = async (updated) => {
     setPapers(updated);
-    localStorage.setItem("examPapers", JSON.stringify(updated));
+    await setDbValue("examPapers", updated);
   };
 
-  const handleVerify = (id) => {
+  const handleVerify = async (id) => {
     const updated = papers.map((paper) =>
       paper.id === id
         ? { ...paper, status: "VERIFIED_LOCKED" }
         : paper
     );
 
-    updateStorage(updated);
+    await updateStorage(updated);
 
-    addAuditLog("Admin", "Paper Verified", id);
+    await addAuditLog("Admin", "Paper Verified", id);
 
-    addNotification(
+    await addNotification(
       "PAPER_SETTER",
       "Paper Verified",
       `Paper ${id} approved by Admin`
@@ -38,16 +42,16 @@ function AdminPaperVerification() {
     toast.success("Paper Verified Successfully.");
   };
 
-  const handleReject = (id) => {
+  const handleReject = async (id) => {
     const updated = papers.map((paper) =>
       paper.id === id
         ? { ...paper, status: "REJECTED" }
         : paper
     );
 
-    updateStorage(updated);
+    await updateStorage(updated);
 
-    addAuditLog("Admin", "Paper Rejected", id);
+    await addAuditLog("Admin", "Paper Rejected", id);
 
     toast.error("Paper Rejected.");
   };

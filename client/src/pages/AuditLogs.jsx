@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Shield, User, Clock, Download } from "lucide-react";
+import { getDbValue } from "../utils/dbStore";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -8,9 +9,12 @@ function AuditLogs() {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    const storedLogs =
-      JSON.parse(localStorage.getItem("auditLogs")) || [];
-    setLogs(storedLogs);
+    const loadLogs = async () => {
+      const storedLogs = await getDbValue("auditLogs", []);
+      setLogs(storedLogs);
+    };
+
+    loadLogs();
   }, []);
 
   const totalPages = Math.ceil(logs.length / ITEMS_PER_PAGE);

@@ -1,7 +1,6 @@
-export const addNotification = (role, title, message) => {
-  const notifications =
-    JSON.parse(localStorage.getItem("notifications")) || [];
+import { getDbValue, updateDbValue } from "./dbStore";
 
+export const addNotification = async (role, title, message) => {
   const newNotification = {
     id: Date.now(),
     role,
@@ -11,25 +10,32 @@ export const addNotification = (role, title, message) => {
     time: new Date().toISOString()
   };
 
-  const updated = [newNotification, ...notifications];
-
-  localStorage.setItem("notifications", JSON.stringify(updated));
-};
-
-export const getNotificationsByRole = (role) => {
-  const notifications =
-    JSON.parse(localStorage.getItem("notifications")) || [];
-
-  return notifications.filter((n) => n.role === role);
-};
-
-export const markAllAsRead = (role) => {
-  const notifications =
-    JSON.parse(localStorage.getItem("notifications")) || [];
-
-  const updated = notifications.map((n) =>
-    n.role === role ? { ...n, read: true } : n
+  await updateDbValue(
+    "notifications",
+    (notifications = []) => [newNotification, ...notifications],
+    []
   );
+};
 
-  localStorage.setItem("notifications", JSON.stringify(updated));
+export const getNotificationsByRole = async (role) => {
+  const notifications = await getDbValue("notifications", []);
+  return notifications.filter((n) => n.role === role || n.role === "ALL");
+};
+
+export const markAllAsRead = async (role) => {
+  await updateDbValue(
+    "notifications",
+    (notifications = []) =>
+      notifications.map((n) => (n.role === role ? { ...n, read: true } : n)),
+    []
+  );
+};
+
+export const markNotificationAsRead = async (id) => {
+  await updateDbValue(
+    "notifications",
+    (notifications = []) =>
+      notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
+    []
+  );
 };

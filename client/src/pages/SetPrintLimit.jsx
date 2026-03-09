@@ -14,17 +14,22 @@ import {
 import { toast } from "sonner";
 import { addNotification } from "../utils/notificationService";
 import { addAuditLog } from "../utils/auditLogger";
+import { getDbValue, setDbValue } from "../utils/dbStore";
 
 
 function SetPrintLimit() {
   const [requests, setRequests] = useState([]);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("printRequests")) || [];
-    setRequests(stored);
+    const loadRequests = async () => {
+      const stored = await getDbValue("printRequests", []);
+      setRequests(stored);
+    };
+
+    loadRequests();
   }, []);
 
- const handleSetLimit = (id, limit) => {
+ const handleSetLimit = async (id, limit) => {
   if (!limit || limit <= 0) {
     toast.error("Please enter a valid limit.");
     return;
@@ -41,25 +46,25 @@ function SetPrintLimit() {
   );
 
   setRequests(updated);
-  localStorage.setItem("printRequests", JSON.stringify(updated));
+  await setDbValue("printRequests", updated);
 
   const selectedRequest = updated.find((r) => r.id === id);
 
   // 🔥 Audit Logs
-  addAuditLog(
+  await addAuditLog(
     "Paper Setter",
     "Print Limit Defined",
     selectedRequest.course
   );
 
-  addAuditLog(
+  await addAuditLog(
     "Paper Setter",
     `Max Limit Set: ${limit}`,
     selectedRequest.course
   );
 
   // 🔔 Notify ADMIN
-  addNotification(
+  await addNotification(
     "ADMIN",
     "Request Forwarded",
     `${selectedRequest.course} forwarded for final approval`

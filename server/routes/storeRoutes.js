@@ -1,0 +1,69 @@
+import express from "express";
+import ScheduledExam from "../models/ScheduledExam.js";
+import ExamPaper from "../models/ExamPaper.js";
+import PrintRequest from "../models/PrintRequest.js";
+import Notification from "../models/Notification.js";
+import AuditLog from "../models/AuditLog.js";
+
+const router = express.Router();
+
+const modelByKey = {
+  scheduledExams: ScheduledExam,
+  examPapers: ExamPaper,
+  printRequests: PrintRequest,
+  notifications: Notification,
+  auditLogs: AuditLog
+};
+
+const sanitizeDoc = (doc) => {
+  if (!doc || typeof doc !== "object") return doc;
+  const { _id, __v, createdAt, updatedAt, ...safe } = doc;
+  return safe;
+};
+
+const sanitizeList = (value) =>
+  Array.isArray(value) ? value.map((item) => sanitizeDoc(item)) : [];
+
+router.get("/:key", async (req, res) => {
+  try {
+    const { key } = req.params;
+    const Model = modelByKey[key];
+
+    if (!Model) {
+      return res.status(400).json({ message: "Unsupported key" });
+    }
+
+    const docs = await Model.find({}).lean();
+    return res.json({ key, value: sanitizeList(docs) });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to load value", error: error.message });
+  }
+});
+
+router.put("/:key", async (req, res) => {
+  try {
+    const { key } = req.params;
+    const { value } = req.body;
+    const Model = modelByKey[key];
+
+    if (!Model) {
+      return res.status(400).json({ message: "Unsupported key" });
+    }
+
+    if (!Array.isArray(value)) {
+      return res.status(400).json({ message: "Value must be an array" });
+    }
+
+    const safeValue = sanitizeList(value);
+    await Model.deleteMany({});
+    if (safeValue.length > 0) {
+      await Model.insertMany(safeValue, { ordered: true });
+    }
+
+    return res.json({ key, value: safeValue });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to save value", error: error.message });
+  }
+});
+
+export default router;

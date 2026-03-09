@@ -16,6 +16,8 @@ import {
   Tooltip
 } from "recharts";
 import ImageWithFallback from "../components/ImageWithFallback";
+import { useEffect, useState } from "react";
+import { getDbValue } from "../utils/dbStore";
 
 const data = [
   { name: "08:00", centers: 400, suspicious: 2 },
@@ -58,9 +60,23 @@ const StatCard = ({ title, value, change, trend, icon: Icon, color }) => (
 );
 
 function Dashboard() {
-  const printRequests = JSON.parse(
-    localStorage.getItem("printRequests") || "[]"
-  );
+  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+  const activeRole = localStorage.getItem("userRole");
+  const [allPrintRequests, setAllPrintRequests] = useState([]);
+
+  useEffect(() => {
+    const loadPrintRequests = async () => {
+      const data = await getDbValue("printRequests", []);
+      setAllPrintRequests(data);
+    };
+
+    loadPrintRequests();
+  }, []);
+
+  const printRequests =
+    activeRole === "ADMIN"
+      ? allPrintRequests
+      : allPrintRequests.filter((req) => req.requestedBy === currentUser?.email);
 
   return (
     <div className="p-6 md:p-8 space-y-8 bg-slate-50 min-h-screen">
@@ -259,9 +275,16 @@ function Dashboard() {
           ))}
 
           {printRequests.length === 0 && (
-            <p className="text-sm text-slate-400">
-              No recent requests.
-            </p>
+            <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+              <ImageWithFallback
+                src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173"
+                alt="Exam documents and dashboard overview"
+                className="w-full h-32 object-cover rounded-lg"
+              />
+              <p className="text-sm text-slate-500 mt-3">
+                No recent requests.
+              </p>
+            </div>
           )}
         </div>
 

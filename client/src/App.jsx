@@ -17,50 +17,136 @@ import Settings from "./pages/Settings";
 import PrintRequest from "./pages/PrintRequest";
 import SetPrintLimit from "./pages/SetPrintLimit";
 import AdminApprovals from "./pages/AdminApprovals";
+import Register from "./pages/Register";
+import NewRegister from "./pages/NewRegister";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   useEffect(() => {
-  startAutoUnlockEngine();
-}, []);
+    startAutoUnlockEngine();
+  }, []);
   return (
-    <Router>
-      <Toaster position="top-right" />
+    <AuthProvider>
+      <Router>
+        <Toaster position="top-right" />
 
-      <Routes>
-        {/* Login */}
-        <Route path="/" element={<Login />} />
+        <Routes>
+          {/* Auth */}
+          <Route path="/" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/newregister" element={<NewRegister />} />
 
-        {/* Dashboard Layout */}
-        <Route path="/dashboard" element={<MainLayout />}>
-
-          {/* Default page when opening /dashboard */}
-          <Route index element={<Dashboard />} />
-
-          <Route path="scheduler" element={<Scheduler />} />
-          <Route path="uploader" element={<Uploader />} />
-          <Route path="set-limit" element={<SetPrintLimit />} />
-          <Route path="admin-approvals" element={<AdminApprovals />} />
-          <Route path="print-request" element={<PrintRequest />} />
-          <Route path="audit-logs" element={<AuditLogs />} />
-          <Route path="monitoring" element={<Monitoring />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="uploaded-papers" element={<UploadedPapers />} />
-
+          {/* Dashboard Layout */}
           <Route
-            path="exam-access"
+            path="/dashboard"
             element={
-              <ProtectedRoute
-                allowedRoles={["ADMIN", "INVIGILATOR"]}
-                userRole="INVIGILATOR"
-              >
-                <ExamAccess />
+              <ProtectedRoute allowedRoles={["ADMIN", "PAPER_SETTER", "INVIGILATOR"]}>
+                <MainLayout />
               </ProtectedRoute>
             }
-          />
+          >
 
-        </Route>
-      </Routes>
-    </Router>
+            {/* Default dashboard */}
+            <Route index element={<Dashboard />} />
+
+            {/* ADMIN ONLY */}
+            <Route
+              path="scheduler"
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
+                  <Scheduler />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="monitoring"
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
+                  <Monitoring />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="admin-approvals"
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
+                  <AdminApprovals />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="uploaded-papers"
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
+                  <UploadedPapers />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* PAPER SETTER */}
+            <Route
+              path="set-limit"
+              element={
+                <ProtectedRoute allowedRoles={["PAPER_SETTER"]}>
+                  <SetPrintLimit />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="uploader"
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN", "PAPER_SETTER"]}>
+                  <Uploader />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* INVIGILATOR */}
+            <Route
+              path="print-request"
+              element={
+                <ProtectedRoute allowedRoles={["INVIGILATOR"]}>
+                  <PrintRequest />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="exam-access"
+              element={
+                <ProtectedRoute allowedRoles={["INVIGILATOR"]}>
+                  <ExamAccess />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* COMMON */}
+            <Route
+              path="audit-logs"
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
+                  <AuditLogs />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="settings"
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+
+          </Route>
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

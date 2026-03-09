@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { addAuditLog } from "../utils/auditLogger";
+import { getDbValue, setDbValue } from "../utils/dbStore";
 import {
   ShieldCheck,
   Clock,
@@ -16,27 +17,30 @@ function UploadedPapers() {
   const itemsPerPage = 5;
 
   useEffect(() => {
-    const stored =
-      JSON.parse(localStorage.getItem("examPapers")) || [];
-    setPapers(stored);
+    const loadPapers = async () => {
+      const stored = await getDbValue("examPapers", []);
+      setPapers(stored);
+    };
+
+    loadPapers();
   }, []);
 
-  const updateStorage = (updated) => {
+  const updateStorage = async (updated) => {
     setPapers(updated);
-    localStorage.setItem("examPapers", JSON.stringify(updated));
+    await setDbValue("examPapers", updated);
   };
 
   // 🔓 Manual Release (Admin override)
-  const handleForceRelease = (id) => {
+  const handleForceRelease = async (id) => {
     const updated = papers.map((paper) =>
       paper.id === id
         ? { ...paper, status: "RELEASED" }
         : paper
     );
 
-    updateStorage(updated);
+    await updateStorage(updated);
 
-    addAuditLog("Admin", "Paper Force Released", id);
+    await addAuditLog("Admin", "Paper Force Released", id);
 
     toast.success("Paper released manually.");
   };

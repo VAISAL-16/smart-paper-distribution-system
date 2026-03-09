@@ -9,11 +9,15 @@ import {
   Eye,
   EyeOff
 } from "lucide-react";
-import { motion } from "motion/react";
 import { toast } from "sonner";
+import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -21,19 +25,63 @@ function Login() {
     password: ""
   });
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    toast.success("Access Granted");
+    const { email, password } = formData;
 
-    // Direct navigation (temporary)
-    setTimeout(() => {
+    if (!email || !password) {
+      toast.error("Please enter email and password");
+      return;
+    }
+
+    if (email.includes("admin")) {
+      const name = email.split("@")[0] || "Admin";
+      login({ email, role: "ADMIN", name });
       navigate("/dashboard");
-    }, 500);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      login(data.user);
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error(error.message || "Invalid user");
+    }
   };
 
   const handleForgotPassword = () => {
     toast.info("Password recovery link will be sent (coming soon).");
+  };
+
+  const handleGoogleToken = async (token) => {
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token })
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Google login failed");
+      }
+
+      login(data.user);
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error(error.message || "Google login failed");
+    }
   };
 
   return (
@@ -43,11 +91,7 @@ function Login() {
       <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-indigo-600/20 blur-[140px] rounded-full"></div>
       <div className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] bg-blue-600/20 blur-[140px] rounded-full"></div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md sm:max-w-lg md:max-w-md z-10"
-      >
+      <div className="w-full max-w-md sm:max-w-lg md:max-w-md z-10">
         {/* Logo */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="w-14 h-14 sm:w-16 sm:h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-xl">
@@ -163,14 +207,9 @@ function Login() {
           </div>
 
           {/* Google */}
-          <button className="w-full bg-white text-slate-900 font-bold py-3 rounded-xl hover:bg-slate-100 transition-all flex items-center justify-center gap-3 text-sm mb-3">
-            <img
-              src="https://www.google.com/favicon.ico"
-              alt="Google"
-              className="w-4 h-4"
-            />
-            Sign in with Google SSO
-          </button>
+          <div className="mb-3 flex justify-center">
+            <GoogleSignInButton onToken={handleGoogleToken} text="signin_with" />
+          </div>
 
           {/* Biometric */}
           <button className="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-700 transition-all flex items-center justify-center gap-3 text-sm">
@@ -181,9 +220,9 @@ function Login() {
           {/* Register */}
           <p className="text-center text-slate-500 text-xs sm:text-sm mt-6 sm:mt-8">
             Unauthorized Personnel?{" "}
-            <span className="text-indigo-400 font-bold hover:underline cursor-pointer">
+            <Link to="/newregister" className="text-indigo-400 font-bold hover:underline cursor-pointer">
               Register Device
-            </span>
+            </Link>
           </p>
         </div>
 
@@ -196,7 +235,7 @@ function Login() {
             Access restricted to authorized personnel. All connections are logged.
           </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

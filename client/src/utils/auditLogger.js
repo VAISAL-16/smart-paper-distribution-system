@@ -1,7 +1,6 @@
-export const addAuditLog = (user, action, subject) => {
-  const existingLogs =
-    JSON.parse(localStorage.getItem("auditLogs")) || [];
+import { updateDbValue } from "./dbStore";
 
+export const addAuditLog = async (user, action, subject) => {
   const newLog = {
     id: `L-${Date.now()}`,
     user,
@@ -11,7 +10,9 @@ export const addAuditLog = (user, action, subject) => {
     hash: Math.random().toString(36).substring(2, 10)
   };
 
-  const updatedLogs = [newLog, ...existingLogs];
-
-  localStorage.setItem("auditLogs", JSON.stringify(updatedLogs));
+  await updateDbValue(
+    "auditLogs",
+    (existingLogs = []) => [newLog, ...existingLogs],
+    []
+  );
 };

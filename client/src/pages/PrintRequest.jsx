@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { addAuditLog } from "../utils/auditLogger";
 import { addNotification } from "../utils/notificationService";
+import { getDbValue, setDbValue } from "../utils/dbStore";
 
 import {
   Table,
@@ -15,6 +16,8 @@ import {
 } from "@mui/material";
 
 function PrintRequest() {
+  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+  const currentEmail = currentUser?.email || "";
   const [form, setForm] = useState({
     course: "",
     examDate: "",
@@ -25,49 +28,51 @@ function PrintRequest() {
   const [requests, setRequests] = useState([]);
 
   useEffect(() => {
-    const stored =
-      JSON.parse(localStorage.getItem("printRequests")) || [];
-    setRequests(stored);
-  }, []);
+    const loadRequests = async () => {
+      const stored = await getDbValue("printRequests", []);
+      setRequests(stored.filter((req) => req.requestedBy === currentEmail));
+    };
 
-  const handleSubmit = (e) => {
+    loadRequests();
+  }, [currentEmail]);
+
+  const handleSubmit = async (e) => {
   e.preventDefault();
 
   const newRequest = {
     ...form,
     status: "PENDING_SETTER_APPROVAL",
-    id: Date.now()
+    id: Date.now(),
+    requestedBy: currentEmail
   };
 
-  const updatedRequests = [...requests, newRequest];
+  const allRequests = await getDbValue("printRequests", []);
+  const updatedRequests = [...allRequests, newRequest];
 
-  setRequests(updatedRequests);
-  localStorage.setItem(
-    "printRequests",
-    JSON.stringify(updatedRequests)
-  );
+  setRequests(updatedRequests.filter((req) => req.requestedBy === currentEmail));
+  await setDbValue("printRequests", updatedRequests);
 
   // 🔥 AUDIT LOGS
-  addAuditLog(
+  await addAuditLog(
     "Invigilator",
     "Print Request Submitted",
     form.course
   );
 
-  addAuditLog(
+  await addAuditLog(
     "Invigilator",
     `Students Count: ${form.students}`,
     form.course
   );
 
-  addAuditLog(
+  await addAuditLog(
     "System",
     "Request Stored in System",
     form.course
   );
 
   // 🔔 NOTIFICATION TO PAPER SETTER
-  addNotification(
+  await addNotification(
     "PAPER_SETTER",
     "New Print Request",
     `${form.course} requires setter approval`
