@@ -9,6 +9,11 @@ Built with:
 - Frontend: React + Vite + Tailwind + MUI + Recharts
 - Backend: Node.js + Express + MongoDB (Mongoose)
 
+## Project Report
+
+- PDF report: [docs/project_report.pdf](docs/project_report.pdf)
+- Editable HTML source: [docs/project_report.html](docs/project_report.html)
+
 ## Current Implementation Status
 
 ### 1) Database Integration (MongoDB)

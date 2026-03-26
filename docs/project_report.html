@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Report - Smart Examination Paper Distribution System</title>
+  <style>
+    :root {
+      --ink: #1f2937;
+      --muted: #5b6473;
+      --line: #d7dee7;
+      --soft: #f4f7fb;
+      --accent: #0f766e;
+      --accent-soft: #e7f7f4;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: #eef3f8;
+      line-height: 1.55;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 12mm auto;
+      padding: 18mm 16mm;
+      background: white;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    }
+
+    .cover {
+      min-height: 255mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--line);
+      padding: 18mm;
+      background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 10px;
+      color: #0f172a;
+    }
+
+    h1 {
+      font-size: 30px;
+      line-height: 1.2;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin-top: 22px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--soft);
+    }
+
+    h3 {
+      font-size: 17px;
+      margin-top: 18px;
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: var(--ink);
+      text-align: justify;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .hero {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #0f766e 0%, #155e75 100%);
+      color: white;
+    }
+
+    .hero p, .hero h2 {
+      color: white;
+      border-bottom: 0;
+      margin: 0;
+    }
+
+    .meta-grid,
+    .grid-2 {
+      display: grid;
+      gap: 14px;
+    }
+
+    .meta-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 18px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: #fff;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+
+    ul {
+      margin: 8px 0 14px 18px;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 7px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 16px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: var(--soft);
+      color: #0f172a;
+    }
+
+    .section-note {
+      padding: 12px 14px;
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      margin: 12px 0 16px;
+      color: #124e48;
+    }
+
+    .footer-note {
+      margin-top: 26px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .page {
+        margin: 0;
+        box-shadow: none;
+        page-break-after: always;
+      }
+
+      .page:last-child {
+        page-break-after: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="page">
+    <div class="cover">
+      <div>
+        <span class="badge">Project Report</span>
+        <h1 style="margin-top: 18px;">Smart Examination Paper Distribution System</h1>
+        <p class="muted" style="font-size: 17px; max-width: 80%;">
+          A secure role-based examination workflow platform for administrators, paper setters, and invigilators with OTP verification, JWT sessions, protected APIs, auditability, and operational dashboards.
+        </p>
+      </div>
+
+      <div class="hero">
+        <h2 style="font-size: 24px;">Academic Submission Report</h2>
+        <p style="margin-top: 10px;">
+          This report presents the problem statement, literature survey, proposed solution, system design, technology stack, implementation summary, security features, testing approach, and conclusion for the Smart Examination Paper Distribution System.
+        </p>
+      </div>
+
+      <div class="meta-grid">
+        <div class="card">
+          <strong>Project Domain</strong>
+          Secure Examination Management and Paper Distribution
+        </div>
+        <div class="card">
+          <strong>Application Type</strong>
+          Full-stack Web Application
+        </div>
+        <div class="card">
+          <strong>Primary Roles</strong>
+          Admin, Paper Setter, Invigilator
+        </div>
+        <div class="card">
+          <strong>Prepared On</strong>
+          26 March 2026
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page">
+    <h2>Abstract</h2>
+    <p>
+      The Smart Examination Paper Distribution System is designed to improve the confidentiality, reliability, and operational efficiency of examination paper handling. Traditional paper distribution processes frequently rely on manual coordination, unsecured communication, last-minute approvals, and limited traceability, which can increase the risk of leakage, delay, and administrative confusion. The proposed system digitizes and secures the complete workflow from exam scheduling and paper upload to approval, release, request handling, and exam-center readiness monitoring.
+    </p>
+    <p>
+      The system supports three distinct user roles: administrator, paper setter, and invigilator. Each role is given a focused interface and permission-scoped actions. The administrator manages users, centers, scheduling, security events, and approvals. The paper setter uploads papers, reviews revisions, checks quality criteria, and manages print constraints. The invigilator submits requests, tracks readiness, accesses exam-related workflows, and records incidents when necessary.
+    </p>
+    <p>
+      From a technical perspective, the platform is implemented as a full-stack web application using React, Vite, Tailwind CSS, Node.js, Express, and MongoDB. The platform includes OTP-based verification, JWT-backed sessions, protected backend routes, role-based authorization, EmailJS integration for email OTP delivery, audit logging, validation middleware, automated tests, Docker assets, and CI/CD support. These features collectively make the project suitable as a modern academic system with enterprise-style design practices.
+    </p>
+
+    <h2>Introduction</h2>
+    <p>
+      Examination paper handling is one of the most sensitive academic operations in any institution. The paper must be authored securely, reviewed carefully, distributed only to authorized personnel, and released only when the right conditions are met. Any weakness in this chain can lead to leakage, confusion, delayed exams, or unfair evaluation conditions. With increasing dependence on digital systems, there is a need for a platform that not only digitizes the workflow but also introduces layered access control, accountability, and operational visibility.
+    </p>
+    <p>
+      The Smart Examination Paper Distribution System addresses this need by organizing the workflow into structured role-based processes. Instead of one generic interface, the platform gives each stakeholder a specialized dashboard and restricted actions aligned to their responsibility. This makes the system easier to use, easier to manage, and significantly safer than unstructured communication or fragmented tools.
+    </p>
+
+    <h2>Problem Statement</h2>
+    <p>
+      Existing paper distribution processes in many institutions suffer from a combination of manual dependency, poor traceability, weak access control, and inefficient coordination. Paper setters may send materials through insecure channels, administrators may struggle to monitor approval state or center readiness in real time, and invigilators may have incomplete visibility into request status or print readiness. In addition, legacy flows often lack audit trails, recovery features, and consistent authentication mechanisms.
+    </p>
+    <div class="section-note">
+      The core problem is to create a secure, traceable, role-aware digital platform that reduces leakage risk, improves operational transparency, and ensures that each user interacts only with the workflows relevant to their responsibility.
+    </div>
+
+    <h2>Objectives</h2>
+    <ul>
+      <li>To design a secure digital system for examination paper handling and distribution.</li>
+      <li>To implement role-based workflows for administrator, paper setter, and invigilator.</li>
+      <li>To introduce OTP verification and JWT-based session security.</li>
+      <li>To maintain persistence and traceability using MongoDB-backed collections.</li>
+      <li>To provide dashboards, analytics, readiness monitoring, audit logs, and incident reporting.</li>
+      <li>To improve academic workflow reliability while retaining usability and responsiveness.</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <h2>Literature Survey</h2>
+    <p>
+      Examination management and secure academic workflow systems have been widely explored in the context of digital transformation in education. Most literature and practical systems emphasize automation, scheduling, online registration, and result processing; however, fewer systems focus specifically on secure examination paper distribution as a high-risk workflow. This project draws conceptually from multiple areas in the literature rather than from one narrow product category.
+    </p>
+
+    <h3>1. Role-Based Access Control in Information Systems</h3>
+    <p>
+      Research on role-based access control (RBAC) consistently shows that assigning permissions according to institutional responsibility is a practical way to reduce unauthorized access and improve governance. In academic settings, roles such as examiner, coordinator, administrator, and invigilator naturally map to bounded permissions. This project adopts RBAC principles by restricting frontend views and backend API routes based on user role.
+    </p>
+
+    <h3>2. Secure Authentication and Multi-Factor Verification</h3>
+    <p>
+      Authentication literature strongly supports layered identity verification for sensitive systems. Password-only systems are vulnerable to credential theft, password reuse, and accidental disclosure. OTP-based verification improves the reliability of authentication by introducing a second proof of identity. The present system uses email OTP for login verification and password recovery, along with JWT-based sessions and expiry enforcement.
+    </p>
+
+    <h3>3. Audit Logging and Traceability in Administrative Systems</h3>
+    <p>
+      Administrative control literature highlights the value of audit trails for accountability, incident review, and operational transparency. In examination workflows, traceability is especially important because unauthorized paper access can have serious academic consequences. This project includes audit logging, incident reporting, and security-event support to improve accountability and post-event analysis.
+    </p>
+
+    <h3>4. Web-Based Academic Management Platforms</h3>
+    <p>
+      Modern educational platforms increasingly rely on responsive web technologies because they allow centralized data access, easier updates, and role-based user experiences across devices. Full-stack JavaScript ecosystems are commonly used for such systems because they accelerate development and support real-time, modular interfaces. This project adopts that approach through React for the frontend and Express with MongoDB for the backend.
+    </p>
+
+    <h3>5. Gap Identified from Existing Approaches</h3>
+    <p>
+      Many available systems prioritize administration and exam scheduling but provide limited focus on secure paper movement, release timing, restricted distribution, and readiness-state coordination. This project specifically fills that gap by combining secure paper workflows, role-based dashboards, center-level readiness, and enterprise-style protections in a single academic platform.
+    </p>
+
+    <h2>Proposed Solution</h2>
+    <p>
+      The proposed solution is a centralized web application that manages the examination paper lifecycle through secure, role-specific workflows. The architecture is divided into frontend presentation, backend business logic, and MongoDB persistence. Instead of a monolithic generic dashboard, the system provides targeted interfaces and actions depending on the authenticated role. Every major action is supported by database persistence, validation rules, controlled access, and user feedback.
+    </p>
+    <div class="grid-2">
+      <div class="card">
+        <strong>Admin Capabilities</strong>
+        Scheduling, approval workflows, monitoring, user access management, security center, center management, analytics, and system configuration.
+      </div>
+      <div class="card">
+        <strong>Paper Setter Capabilities</strong>
+        Upload papers, review personal workspace, set print limits, maintain revision history, and complete quality checklists.
+      </div>
+      <div class="card">
+        <strong>Invigilator Capabilities</strong>
+        Request papers, access exam workflows, monitor readiness, view request status, and file incident reports.
+      </div>
+      <div class="card">
+        <strong>Security Controls</strong>
+        OTP verification, JWT authentication, route authorization, session expiry, audit records, account status control, and protected APIs.
+      </div>
+    </div>
+
+    <h2>System Architecture</h2>
+    <p>
+      The system follows a client-server architecture. The React frontend communicates with the Express backend through RESTful APIs. The backend validates requests, applies role-based access checks, manages OTP workflows, and interacts with MongoDB collections through Mongoose models. Tokens are used for secure session continuity, while the frontend stores only the required user/session metadata to support navigation and route protection.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Presentation Layer</td>
+          <td>React-based responsive UI with role-specific pages, dashboards, forms, notifications, and OTP flows.</td>
+        </tr>
+        <tr>
+          <td>Application Layer</td>
+          <td>Express controllers, middleware, auth utilities, validation helpers, route definitions, and workflow logic.</td>
+        </tr>
+        <tr>
+          <td>Data Layer</td>
+          <td>MongoDB collections managed through Mongoose schemas, indexes, normalization helpers, and sync scripts.</td>
+        </tr>
+        <tr>
+          <td>Security Layer</td>
+          <td>JWT tokens, OTP verification, RBAC enforcement, password hashing, session expiry checks, and audit support.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>Modules Implemented</h2>
+
+    <h3>Administrator Module</h3>
+    <ul>
+      <li>Dashboard overview and monitoring pages.</li>
+      <li>Exam scheduling and paper approval workflows.</li>
+      <li>User access management for enabling or disabling accounts.</li>
+      <li>Security center for visibility into security-oriented operations.</li>
+      <li>Center management, settings, analytics, and approval decisions.</li>
+    </ul>
+
+    <h3>Paper Setter Module</h3>
+    <ul>
+      <li>Upload paper interface with secure storage-backed workflow.</li>
+      <li>Personal workspace for viewing submitted papers and states.</li>
+      <li>Revision history management.</li>
+      <li>Quality checklist validation support.</li>
+      <li>Print-limit configuration aligned with administrative control.</li>
+    </ul>
+
+    <h3>Invigilator Module</h3>
+    <ul>
+      <li>Print request submission.</li>
+      <li>Exam access workflow.</li>
+      <li>Request tracking and center readiness pages.</li>
+      <li>Incident reporting and escalation-support features.</li>
+    </ul>
+
+    <h3>Authentication and Recovery Module</h3>
+    <ul>
+      <li>Email OTP-based login verification.</li>
+      <li>Email OTP-based forgot-password workflow.</li>
+      <li>Separate EmailJS templates for login OTP and password-reset OTP.</li>
+      <li>Random 6-digit OTP generation with 5-minute validity.</li>
+      <li>Resend OTP support and session-expired messaging.</li>
+    </ul>
+
+    <h2>Technology Stack Used</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Technology</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Frontend</td>
+          <td>React 19, Vite</td>
+          <td>Fast single-page application development and modular UI rendering.</td>
+        </tr>
+        <tr>
+          <td>Styling</td>
+          <td>Tailwind CSS, MUI, Emotion</td>
+          <td>Responsive UI, utility-first styling, and selected component styling support.</td>
+        </tr>
+        <tr>
+          <td>Routing</td>
+          <td>React Router</td>
+          <td>Page navigation and protected route handling.</td>
+        </tr>
+        <tr>
+          <td>Charts and UI Support</td>
+          <td>Recharts, Lucide React, Motion</td>
+          <td>Analytics, icons, and richer UI presentation.</td>
+        </tr>
+        <tr>
+          <td>Maps</td>
+          <td>Leaflet, React Leaflet</td>
+          <td>Center/location visualization support.</td>
+        </tr>
+        <tr>
+          <td>Backend</td>
+          <td>Node.js, Express</td>
+          <td>REST API development, middleware handling, controller logic.</td>
+        </tr>
+        <tr>
+          <td>Database</td>
+          <td>MongoDB, Mongoose</td>
+          <td>Document storage, schema modeling, indexing, and persistence.</td>
+        </tr>
+        <tr>
+          <td>Authentication</td>
+          <td>JWT, bcryptjs, Google Auth Library</td>
+          <td>Session tokens, password hashing, and Google login support.</td>
+        </tr>
+        <tr>
+          <td>Email OTP</td>
+          <td>EmailJS, Nodemailer fallback structure</td>
+          <td>Delivery of login and forgot-password OTP codes.</td>
+        </tr>
+        <tr>
+          <td>Testing</td>
+          <td>Node test runner</td>
+          <td>Security, validation, and API integration checks.</td>
+        </tr>
+        <tr>
+          <td>DevOps</td>
+          <td>Docker, Docker Compose, GitHub Actions</td>
+          <td>Deployment packaging, local stack orchestration, and CI pipeline.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Database Design Summary</h2>
+    <p>
+      The system uses multiple role-oriented and workflow-oriented collections in MongoDB. This structure improves clarity, maintainability, and future scalability. Important collections include administrator users, setter users, invigilator users, exam papers, scheduled exams, print requests, notifications, audit logs, OTP records, security events, incident reports, paper revisions, and quality checklists.
+    </p>
+    <ul>
+      <li><strong>User collections:</strong> AdminUser, SetterUser, InvigilatorUser</li>
+      <li><strong>Workflow collections:</strong> ExamPaper, ScheduledExam, PrintRequest</li>
+      <li><strong>Control collections:</strong> Notification, AuditLog, AuthOtp, SecurityEvent</li>
+      <li><strong>Operational collections:</strong> IncidentReport, PaperRevision, QualityChecklist, Center, SystemConfig</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <h2>Security Features</h2>
+    <ul>
+      <li>JWT-based authentication for protected API access.</li>
+      <li>Password hashing using bcryptjs.</li>
+      <li>Email OTP for login verification and password recovery.</li>
+      <li>Random 6-digit OTP generation with configurable validity window.</li>
+      <li>Role-based authorization middleware for sensitive routes.</li>
+      <li>Session expiry enforcement on protected frontend routes.</li>
+      <li>Disabled-user checks and account status management.</li>
+      <li>Audit and security support collections for accountability.</li>
+      <li>Environment-based configuration for secrets and deployment values.</li>
+    </ul>
+
+    <h2>Testing and Validation</h2>
+    <p>
+      The project includes automated backend tests to validate important application behavior. These tests cover token security helpers, authorization middleware, request validation utilities, and route-level API behavior. The frontend production build is also verified to ensure that the application compiles successfully after feature integration.
+    </p>
+    <ul>
+      <li>Security utility tests for JWT and middleware.</li>
+      <li>Validation utility tests for required fields and enum constraints.</li>
+      <li>API integration tests for health, auth, protected user listing, store routes, and center routes.</li>
+      <li>Frontend production build validation through Vite.</li>
+    </ul>
+
+    <h2>Deployment and Operational Readiness</h2>
+    <p>
+      The project includes production-style assets such as Dockerfiles for frontend and backend, a Docker Compose configuration, environment templates, and a GitHub Actions CI workflow. These additions improve reproducibility and make the project stronger for academic demonstration and future deployment work. While this does not automatically make the system fully enterprise-operated, it does align the codebase with modern production-oriented practices.
+    </p>
+
+    <h2>Advantages of the System</h2>
+    <ul>
+      <li>Reduces manual dependency and improves process structure.</li>
+      <li>Improves confidentiality of paper movement and release.</li>
+      <li>Provides clear role separation and permission control.</li>
+      <li>Improves traceability through persistent records and audit support.</li>
+      <li>Offers a responsive modern interface across devices.</li>
+      <li>Supports recovery, monitoring, and operational decision-making.</li>
+      <li>Introduces enterprise-style engineering elements suitable for final-year presentation.</li>
+    </ul>
+
+    <h2>Limitations</h2>
+    <ul>
+      <li>The project is strong for academic/demo use but not yet a fully operated enterprise production deployment.</li>
+      <li>Real-world scaling would require cloud infrastructure, observability, formal backup policies, and ongoing operations support.</li>
+      <li>Email deliverability depends on third-party provider configuration and sender reputation.</li>
+      <li>Broader end-to-end test coverage can still be expanded in future work.</li>
+    </ul>
+
+    <h2>Future Enhancements</h2>
+    <ul>
+      <li>Real cloud deployment with staging and production environments.</li>
+      <li>Advanced monitoring, centralized logging, and alerting.</li>
+      <li>Refresh token rotation and stronger session lifecycle management.</li>
+      <li>More comprehensive end-to-end testing.</li>
+      <li>Document encryption and stronger file-protection policies.</li>
+      <li>Institution-specific reporting and analytics exports.</li>
+      <li>Custom-domain transactional email setup for higher deliverability.</li>
+    </ul>
+
+    <h2>Conclusion</h2>
+    <p>
+      The Smart Examination Paper Distribution System successfully addresses a sensitive and operationally important academic problem by introducing secure digital workflows, role-based access, OTP-backed verification, JWT sessions, and persistent monitoring support. The project goes beyond a basic CRUD implementation by integrating multiple user roles, workflow-specific pages, testing, deployment assets, database hardening, and enterprise-style architectural improvements.
+    </p>
+    <p>
+      From an academic perspective, the project is a complete, modern, and technically strong submission. It demonstrates practical software engineering, security awareness, database-backed workflow design, responsive frontend implementation, and clear alignment with real institutional needs. As a result, it serves as a meaningful example of how web technologies can be used to modernize sensitive educational operations safely and effectively.
+    </p>
+
+    <div class="footer-note">
+      Prepared for the project: <strong>Smart Examination Paper Distribution System</strong>.<br />
+      Report generated from the implemented codebase and project structure in the repository workspace.
+    </div>
+  </section>
+</body>
+</html>
