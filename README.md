@@ -13,6 +13,7 @@ Built with:
 
 - PDF report: [docs/project_report.pdf](docs/project_report.pdf)
 - Editable HTML source: [docs/project_report.html](docs/project_report.html)
+- Deployment guide: [docs/deployment_guide.md](docs/deployment_guide.md)
 
 ## Current Implementation Status
 
@@ -121,6 +122,20 @@ Frontend default: `http://localhost:5173`
 Backend default: `http://localhost:5000`
 
 ## Deployment and CI/CD
+
+### Recommended Live Deployment
+
+For academic and portfolio use, the recommended deployment stack is:
+
+- Frontend: `Vercel`
+- Backend API: `Render`
+- Database: `MongoDB Atlas`
+
+Deployment-ready files included in this repo:
+
+- [vercel.json](vercel.json)
+- [render.yaml](render.yaml)
+- [docs/deployment_guide.md](docs/deployment_guide.md)
 
 ### Environment Templates
 

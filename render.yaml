@@ -1,0 +1,55 @@
+services:
+  - type: web
+    name: smart-paper-distribution-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: REQUEST_BODY_LIMIT
+        value: 1mb
+      - key: OTP_TTL_MINUTES
+        value: 5
+      - key: RESET_TOKEN_TTL_MINUTES
+        value: 10
+      - key: LOGIN_RATE_LIMIT_WINDOW_MS
+        value: 600000
+      - key: LOGIN_RATE_LIMIT_MAX
+        value: 5
+      - key: OTP_VERIFY_RATE_LIMIT_WINDOW_MS
+        value: 600000
+      - key: OTP_VERIFY_RATE_LIMIT_MAX
+        value: 8
+      - key: FORGOT_RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: FORGOT_RATE_LIMIT_MAX
+        value: 4
+      - key: USE_STATIC_OTP
+        value: "false"
+      - key: MONGO_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: EMAILJS_SERVICE_ID
+        sync: false
+      - key: EMAILJS_TEMPLATE_ID
+        sync: false
+      - key: EMAILJS_LOGIN_TEMPLATE_ID
+        sync: false
+      - key: EMAILJS_FORGOT_TEMPLATE_ID
+        sync: false
+      - key: EMAILJS_PUBLIC_KEY
+        sync: false
+      - key: EMAILJS_PRIVATE_KEY
+        sync: false
