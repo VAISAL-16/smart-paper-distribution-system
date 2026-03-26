@@ -115,6 +115,77 @@ npm run dev
 Frontend default: `http://localhost:5173`  
 Backend default: `http://localhost:5000`
 
+## Deployment and CI/CD
+
+### Environment Templates
+
+Use the included templates before running or deploying:
+
+- `server/.env.example`
+- `client/.env.example`
+
+Copy them to real env files:
+
+```bash
+cp server/.env.example server/.env
+cp client/.env.example client/.env
+```
+
+### Docker Deployment
+
+Production-style container assets are included:
+
+- `server/Dockerfile`
+- `client/Dockerfile`
+- `client/nginx.conf`
+- `docker-compose.yml`
+
+Start the full stack with Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+Default ports:
+
+- Frontend: `http://localhost:8080`
+- Backend: `http://localhost:5000`
+- MongoDB: `mongodb://localhost:27017`
+
+### CI Pipeline
+
+GitHub Actions workflow included:
+
+- `.github/workflows/ci.yml`
+
+Current CI checks:
+
+- Server dependency install
+- Server automated tests (`npm test`)
+- Client dependency install
+- Client production build (`npm run build`)
+
+### Database Hardening
+
+An index synchronization script is included for schema/index rollout:
+
+```bash
+cd server
+npm run db:sync-indexes
+```
+
+Use this after deploying new schema/index changes so MongoDB aligns with the latest model definitions.
+
+### Operational Endpoints
+
+Backend health check:
+
+```bash
+GET /health
+```
+
+Returns uptime, environment, and request ID information.
+
 ## Useful MongoDB Collections to Inspect
 
 - `setters`
@@ -129,4 +200,7 @@ Backend default: `http://localhost:5000`
 
 - Local `.env` files are not meant to be committed.
 - Google client secret is not required in frontend flow and should not be exposed.
-- Some legacy pages/components still use older patterns and can be further standardized in next iteration.
+- Demo OTP mode can be enabled with:
+  - `USE_STATIC_OTP=true`
+  - `COMMON_OTP=123456`
+- For stricter environments, disable static OTP and configure SMTP credentials.

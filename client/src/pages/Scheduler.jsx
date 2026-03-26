@@ -13,145 +13,156 @@ const initialExams = [
     duration: "3h",
     status: "Scheduled",
     centers: 420
-  },
-  {
-    id: "2",
-    code: "MATH202",
-    subject: "Advanced Calculus",
-    date: "2026-02-20",
-    time: "14:00",
-    duration: "2h",
-    status: "Scheduled",
-    centers: 380
-  },
-  {
-    id: "3",
-    code: "PHY301",
-    subject: "Quantum Mechanics",
-    date: "2026-02-16",
-    time: "09:00",
-    duration: "3h",
-    status: "Live",
-    centers: 150
-  },
-  {
-    id: "4",
-    code: "ENG105",
-    subject: "Linguistics & Phonetics",
-    date: "2026-02-14",
-    time: "11:00",
-    duration: "2h",
-    status: "Completed",
-    centers: 510
   }
 ];
 
 const departments = ["CS", "ECE", "EEE", "EIE", "MECH", "AIDS", "IT"];
 
+const parseExamCode = (code = "") => {
+  const match = String(code).toUpperCase().match(/^([A-Z]+)(\d+)$/);
+  if (!match) return { department: "", examNumber: "" };
+  return { department: match[1], examNumber: match[2] };
+};
+
 function Scheduler() {
   const [exams, setExams] = useState(initialExams);
   const [isLoaded, setIsLoaded] = useState(false);
-
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingExamId, setEditingExamId] = useState(null);
+  const [formState, setFormState] = useState({
+    department: "",
+    examNumber: "",
+    subject: "",
+    date: "",
+    time: "",
+    duration: "",
+    status: "Scheduled"
+  });
 
   const itemsPerPage = 5;
 
   useEffect(() => {
     const loadExams = async () => {
       const stored = await getDbValue("scheduledExams", null);
-      if (stored && Array.isArray(stored)) {
+      if (stored && Array.isArray(stored) && stored.length > 0) {
         setExams(stored);
       } else {
         await setDbValue("scheduledExams", initialExams);
       }
       setIsLoaded(true);
     };
-
     loadExams();
   }, []);
 
-  const filteredExams = useMemo(() => {
-    return exams.filter((exam) => {
-      const matchesSearch =
-        exam.subject.toLowerCase().includes(search.toLowerCase()) ||
-        exam.code.toLowerCase().includes(search.toLowerCase());
+  const filteredExams = useMemo(
+    () =>
+      exams.filter((exam) => {
+        const matchesSearch =
+          String(exam.subject || "").toLowerCase().includes(search.toLowerCase()) ||
+          String(exam.code || "").toLowerCase().includes(search.toLowerCase());
+        const matchesStatus = statusFilter === "ALL" || exam.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      }),
+    [search, statusFilter, exams]
+  );
 
-      const matchesStatus =
-        statusFilter === "ALL" || exam.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [search, statusFilter, exams]);
-
-  const totalPages = Math.ceil(filteredExams.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredExams.length / itemsPerPage) || 1;
   const paginatedExams = filteredExams.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  const handleDelete = async (id) => {
-    const updated = exams.filter((exam) => exam.id !== id);
+  const persistExams = async (updated) => {
     setExams(updated);
     if (isLoaded) {
       await setDbValue("scheduledExams", updated);
     }
+  };
+
+  const handleDelete = async (id) => {
+    const updated = exams.filter((exam) => exam.id !== id);
+    await persistExams(updated);
     toast.success("Exam deleted.");
   };
 
-  const handleAddExam = async (e) => {
-    e.preventDefault();
-    const form = new FormData(e.target);
-    const secureId = `EXAM_${Date.now()}`;
-    const department = String(form.get("department") || "").toUpperCase();
-    const examNumber = String(form.get("examNumber") || "").trim();
+  const openNewModal = () => {
+    setEditingExamId(null);
+    setFormState({
+      department: "",
+      examNumber: "",
+      subject: "",
+      date: "",
+      time: "",
+      duration: "",
+      status: "Scheduled"
+    });
+    setIsModalOpen(true);
+  };
 
-    const newExam = {
-      id: secureId,
-      code: `${department}${examNumber}`,
-      department,
-      subject: form.get("subject"),
-      date: form.get("date"),
-      time: form.get("time"),
-      duration: form.get("duration"),
-      status: "Scheduled",
-      centers: 0
+  const openEditModal = (exam) => {
+    const parsed = parseExamCode(exam.code);
+    setEditingExamId(exam.id);
+    setFormState({
+      department: exam.department || parsed.department || "",
+      examNumber: parsed.examNumber || "",
+      subject: exam.subject || "",
+      date: exam.date || "",
+      time: exam.time || "",
+      duration: exam.duration || "",
+      status: exam.status || "Scheduled"
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const code = `${formState.department}${formState.examNumber}`;
+    const payload = {
+      id: editingExamId || `EXAM_${Date.now()}`,
+      code,
+      department: formState.department,
+      subject: formState.subject,
+      date: formState.date,
+      time: formState.time,
+      duration: formState.duration,
+      status: formState.status,
+      centers: editingExamId
+        ? Number(exams.find((item) => item.id === editingExamId)?.centers) || 0
+        : 0
     };
 
-    const updated = [...exams, newExam];
-    setExams(updated);
-    if (isLoaded) {
-      await setDbValue("scheduledExams", updated);
-    }
+    const updated = editingExamId
+      ? exams.map((exam) => (exam.id === editingExamId ? payload : exam))
+      : [...exams, payload];
+
+    await persistExams(updated);
     setIsModalOpen(false);
-    toast.success("Exam scheduled successfully.");
+    setEditingExamId(null);
+    toast.success(editingExamId ? "Exam updated." : "Exam scheduled.");
   };
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">
-            Intelligent Exam Scheduler
-          </h2>
-          <p className="text-slate-500 mt-1">
-            Configure automated paper release timings.
-          </p>
+          <h2 className="text-2xl font-black text-slate-900">Intelligent Exam Scheduler</h2>
+          <p className="text-slate-500 mt-1 text-sm">Create, edit, and control exam windows.</p>
         </div>
 
         <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-indigo-600 text-white px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold hover:bg-indigo-700"
+          onClick={openNewModal}
+          className="bg-indigo-600 text-white px-4 py-2.5 rounded-xl inline-flex items-center gap-2 font-bold hover:bg-indigo-700"
         >
           <Plus size={18} />
           Schedule New Exam
         </button>
       </div>
 
-      <div className="flex gap-4 mb-6">
-        <div className="flex items-center gap-2 bg-white border px-3 py-2 rounded-lg w-64">
+      <div className="flex flex-col md:flex-row gap-3 mb-6">
+        <div className="flex items-center gap-2 bg-white border px-3 py-2 rounded-lg md:w-80">
           <Search size={16} />
           <input
             type="text"
@@ -166,7 +177,7 @@ function Scheduler() {
         </div>
 
         <select
-          className="border px-3 py-2 rounded-lg text-sm"
+          className="border px-3 py-2 rounded-lg text-sm bg-white"
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter(e.target.value);
@@ -191,33 +202,26 @@ function Scheduler() {
               <th className="px-6 py-4">Actions</th>
             </tr>
           </thead>
-
           <tbody className="divide-y">
             {paginatedExams.map((exam) => (
               <tr key={exam.id} className="hover:bg-slate-50">
                 <td className="px-6 py-4">
                   <div>
                     <div className="font-bold">{exam.subject}</div>
-                    <div className="text-xs text-slate-500 font-mono">
-                      {exam.code}
-                    </div>
+                    <div className="text-xs text-slate-500 font-mono">{exam.code}</div>
                   </div>
                 </td>
-
                 <td className="px-6 py-4 text-sm">
-                  {exam.date} • {exam.time} ({exam.duration})
+                  {exam.date} | {exam.time} ({exam.duration})
                 </td>
-
                 <td className="px-6 py-4">{exam.centers}</td>
-
                 <td className="px-6 py-4">
                   <span className="text-xs px-3 py-1 rounded-full bg-blue-50 text-blue-700">
                     {exam.status}
                   </span>
                 </td>
-
                 <td className="px-6 py-4 flex gap-2">
-                  <button>
+                  <button onClick={() => openEditModal(exam)}>
                     <Edit2 size={16} />
                   </button>
                   <button onClick={() => handleDelete(exam.id)}>
@@ -237,9 +241,7 @@ function Scheduler() {
               key={index}
               onClick={() => setCurrentPage(index + 1)}
               className={`px-4 py-2 rounded-lg ${
-                currentPage === index + 1
-                  ? "bg-indigo-600 text-white"
-                  : "bg-white border"
+                currentPage === index + 1 ? "bg-indigo-600 text-white" : "bg-white border"
               }`}
             >
               {index + 1}
@@ -249,12 +251,19 @@ function Scheduler() {
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl w-96">
-            <h3 className="text-lg font-bold mb-4">Schedule New Exam</h3>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md">
+            <h3 className="text-lg font-bold mb-4">
+              {editingExamId ? "Edit Exam" : "Schedule New Exam"}
+            </h3>
 
-            <form onSubmit={handleAddExam} className="space-y-3">
-              <select name="department" required className="w-full border p-2 rounded">
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <select
+                required
+                className="w-full border p-2 rounded"
+                value={formState.department}
+                onChange={(e) => setFormState((p) => ({ ...p, department: e.target.value }))}
+              >
                 <option value="">Select Department</option>
                 {departments.map((dept) => (
                   <option key={dept} value={dept}>
@@ -263,36 +272,63 @@ function Scheduler() {
                 ))}
               </select>
               <input
-                name="examNumber"
                 placeholder="Exam Number (e.g. 101)"
                 required
                 className="w-full border p-2 rounded"
+                value={formState.examNumber}
+                onChange={(e) => setFormState((p) => ({ ...p, examNumber: e.target.value }))}
               />
               <input
-                name="subject"
                 placeholder="Subject Name"
                 required
                 className="w-full border p-2 rounded"
+                value={formState.subject}
+                onChange={(e) => setFormState((p) => ({ ...p, subject: e.target.value }))}
               />
-              <input name="date" type="date" required className="w-full border p-2 rounded" />
-              <input name="time" type="time" required className="w-full border p-2 rounded" />
               <input
-                name="duration"
+                type="date"
+                required
+                className="w-full border p-2 rounded"
+                value={formState.date}
+                onChange={(e) => setFormState((p) => ({ ...p, date: e.target.value }))}
+              />
+              <input
+                type="time"
+                required
+                className="w-full border p-2 rounded"
+                value={formState.time}
+                onChange={(e) => setFormState((p) => ({ ...p, time: e.target.value }))}
+              />
+              <input
                 placeholder="Duration (e.g. 3h)"
                 required
                 className="w-full border p-2 rounded"
+                value={formState.duration}
+                onChange={(e) => setFormState((p) => ({ ...p, duration: e.target.value }))}
               />
+              <select
+                className="w-full border p-2 rounded"
+                value={formState.status}
+                onChange={(e) => setFormState((p) => ({ ...p, status: e.target.value }))}
+              >
+                <option value="Scheduled">Scheduled</option>
+                <option value="Live">Live</option>
+                <option value="Completed">Completed</option>
+              </select>
 
-              <div className="flex gap-3 mt-4">
+              <div className="flex gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setEditingExamId(null);
+                  }}
                   className="flex-1 border py-2 rounded"
                 >
                   Cancel
                 </button>
                 <button type="submit" className="flex-1 bg-indigo-600 text-white py-2 rounded">
-                  Save
+                  {editingExamId ? "Update" : "Save"}
                 </button>
               </div>
             </form>
@@ -304,3 +340,4 @@ function Scheduler() {
 }
 
 export default Scheduler;
+

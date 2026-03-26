@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { addAuditLog } from "../utils/auditLogger";
 import { getDbValue, setDbValue } from "../utils/dbStore";
+import { trackCenterEvent } from "../utils/centerTracker";
 import {
   ShieldCheck,
   Clock,
@@ -39,6 +40,22 @@ function UploadedPapers() {
     );
 
     await updateStorage(updated);
+    const releasedPaper = updated.find((paper) => paper.id === id);
+    if (releasedPaper) {
+      await trackCenterEvent({
+        centerName: releasedPaper.locationName,
+        paperEvent: {
+          paperId: releasedPaper.id,
+          examId: releasedPaper.examId,
+          course: releasedPaper.course,
+          subject: releasedPaper.subject,
+          status: releasedPaper.status,
+          uploadedBy: releasedPaper.uploadedBy,
+          uploadedAt: releasedPaper.uploadedAt,
+          releaseTime: releasedPaper.releaseTime
+        }
+      });
+    }
 
     await addAuditLog("Admin", "Paper Force Released", id);
 

@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { addAuditLog } from "../utils/auditLogger";
 import { addNotification } from "../utils/notificationService";
 import { getDbValue, setDbValue } from "../utils/dbStore";
+import { trackCenterEvent } from "../utils/centerTracker";
 
 import {
   Table,
@@ -19,6 +20,8 @@ function PrintRequest() {
   const currentUser = JSON.parse(localStorage.getItem("user") || "null");
   const currentEmail = currentUser?.email || "";
   const [form, setForm] = useState({
+    centerName: "",
+    institutionName: "",
     course: "",
     examDate: "",
     students: "",
@@ -51,6 +54,18 @@ function PrintRequest() {
 
   setRequests(updatedRequests.filter((req) => req.requestedBy === currentEmail));
   await setDbValue("printRequests", updatedRequests);
+  await trackCenterEvent({
+    centerName: form.centerName,
+    requestEvent: {
+      requestId: newRequest.id,
+      institutionName: newRequest.institutionName,
+      course: newRequest.course,
+      examDate: newRequest.examDate,
+      status: newRequest.status,
+      requestedCopies: Number(newRequest.requestedCopies) || 0,
+      requestedBy: newRequest.requestedBy
+    }
+  });
 
   // 🔥 AUDIT LOGS
   await addAuditLog(
@@ -81,6 +96,8 @@ function PrintRequest() {
   toast.success("Print request sent to Paper Setter.");
 
   setForm({
+    centerName: "",
+    institutionName: "",
     course: "",
     examDate: "",
     students: "",
@@ -108,6 +125,28 @@ function PrintRequest() {
           onSubmit={handleSubmit}
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
+
+          <input
+            type="text"
+            placeholder="Center Name (e.g. Chennai Main Hall)"
+            value={form.centerName}
+            required
+            className="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+            onChange={(e) =>
+              setForm({ ...form, centerName: e.target.value })
+            }
+          />
+
+          <input
+            type="text"
+            placeholder="Institution Name (e.g. ABC Engineering College)"
+            value={form.institutionName}
+            required
+            className="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+            onChange={(e) =>
+              setForm({ ...form, institutionName: e.target.value })
+            }
+          />
 
           <input
             type="text"
@@ -172,6 +211,8 @@ function PrintRequest() {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#f1f5f9" }}>
+                  <TableCell><strong>Center</strong></TableCell>
+                  <TableCell><strong>Institution</strong></TableCell>
                   <TableCell><strong>Course</strong></TableCell>
                   <TableCell><strong>Exam Date</strong></TableCell>
                   <TableCell><strong>Students</strong></TableCell>
@@ -183,6 +224,8 @@ function PrintRequest() {
               <TableBody>
                 {requests.map((req) => (
                   <TableRow key={req.id}>
+                    <TableCell>{req.centerName}</TableCell>
+                    <TableCell>{req.institutionName || "-"}</TableCell>
                     <TableCell>{req.course}</TableCell>
                     <TableCell>{req.examDate}</TableCell>
                     <TableCell>{req.students}</TableCell>

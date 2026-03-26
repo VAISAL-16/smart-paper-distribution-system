@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { addAuditLog } from "../utils/auditLogger";
 import { addNotification } from "../utils/notificationService";
 import { getDbValue, setDbValue } from "../utils/dbStore";
+import { trackCenterEvent } from "../utils/centerTracker";
 
 function AdminPaperVerification() {
   const [papers, setPapers] = useState([]);
@@ -30,6 +31,22 @@ function AdminPaperVerification() {
     );
 
     await updateStorage(updated);
+    const verifiedPaper = updated.find((paper) => paper.id === id);
+    if (verifiedPaper) {
+      await trackCenterEvent({
+        centerName: verifiedPaper.locationName,
+        paperEvent: {
+          paperId: verifiedPaper.id,
+          examId: verifiedPaper.examId,
+          course: verifiedPaper.course,
+          subject: verifiedPaper.subject,
+          status: verifiedPaper.status,
+          uploadedBy: verifiedPaper.uploadedBy,
+          uploadedAt: verifiedPaper.uploadedAt,
+          releaseTime: verifiedPaper.releaseTime
+        }
+      });
+    }
 
     await addAuditLog("Admin", "Paper Verified", id);
 
@@ -50,6 +67,22 @@ function AdminPaperVerification() {
     );
 
     await updateStorage(updated);
+    const rejectedPaper = updated.find((paper) => paper.id === id);
+    if (rejectedPaper) {
+      await trackCenterEvent({
+        centerName: rejectedPaper.locationName,
+        paperEvent: {
+          paperId: rejectedPaper.id,
+          examId: rejectedPaper.examId,
+          course: rejectedPaper.course,
+          subject: rejectedPaper.subject,
+          status: rejectedPaper.status,
+          uploadedBy: rejectedPaper.uploadedBy,
+          uploadedAt: rejectedPaper.uploadedAt,
+          releaseTime: rejectedPaper.releaseTime
+        }
+      });
+    }
 
     await addAuditLog("Admin", "Paper Rejected", id);
 

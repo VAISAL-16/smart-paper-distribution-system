@@ -1,10 +1,10 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { authFetch, getApiBase } from "./authFetch";
 
-const getUrl = (key) => `${API_BASE}/api/store/${encodeURIComponent(key)}`;
+const getUrl = (key) => `${getApiBase()}/api/store/${encodeURIComponent(key)}`;
 
 export const getDbValue = async (key, fallback = null) => {
   try {
-    const response = await fetch(getUrl(key));
+    const response = await authFetch(getUrl(key));
     if (!response.ok) throw new Error("load_failed");
     const data = await response.json();
     return data.value ?? fallback;
@@ -14,7 +14,7 @@ export const getDbValue = async (key, fallback = null) => {
 };
 
 export const setDbValue = async (key, value) => {
-  const response = await fetch(getUrl(key), {
+  const response = await authFetch(getUrl(key), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ value })

@@ -1,18 +1,51 @@
 import { getDbValue, updateDbValue } from "./dbStore";
 
-export const addNotification = async (role, title, message) => {
+export const addNotification = async (role, title, message, options = {}) => {
   const newNotification = {
     id: Date.now(),
     role,
     title,
     message,
     read: false,
-    time: new Date().toISOString()
+    time: new Date().toISOString(),
+    dedupeKey: options.dedupeKey || null,
+    severity: options.severity || "info",
+    source: options.source || "system"
   };
 
   await updateDbValue(
     "notifications",
     (notifications = []) => [newNotification, ...notifications],
+    []
+  );
+};
+
+export const addNotificationIfNotExists = async (
+  role,
+  title,
+  message,
+  dedupeKey,
+  options = {}
+) => {
+  await updateDbValue(
+    "notifications",
+    (notifications = []) => {
+      if (notifications.some((item) => item.dedupeKey === dedupeKey)) {
+        return notifications;
+      }
+      const newNotification = {
+        id: Date.now(),
+        role,
+        title,
+        message,
+        read: false,
+        time: new Date().toISOString(),
+        dedupeKey,
+        severity: options.severity || "warning",
+        source: options.source || "system"
+      };
+      return [newNotification, ...notifications];
+    },
     []
   );
 };

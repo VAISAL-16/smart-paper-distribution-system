@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ShieldCheck, Mail, Lock, User, ArrowRight, Briefcase, Eye, EyeOff } from "lucide-react";
+import { ShieldCheck, Mail, Lock, User, ArrowRight, Briefcase, Eye, EyeOff, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 import GoogleSignInButton from "../components/GoogleSignInButton";
@@ -15,6 +15,7 @@ function NewRegister() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
     role: ""
   });
@@ -23,7 +24,7 @@ function NewRegister() {
 
   const handleLocalRegister = async (e) => {
     e.preventDefault();
-    const { name, email, password, role } = formData;
+    const { name, email, phone, password, role } = formData;
 
     if (!name || !email || !password || !role) {
       toast.error("Please fill name, email, password and role.");
@@ -35,7 +36,7 @@ function NewRegister() {
       const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role })
+        body: JSON.stringify({ name, email, phone, password, role })
       });
 
       const data = await response.json();
@@ -43,7 +44,7 @@ function NewRegister() {
         throw new Error(data.message || "Registration failed");
       }
 
-      login(data.user);
+      login({ ...data.user, token: data.token });
       toast.success("Account created successfully.");
       navigate("/dashboard");
     } catch (error) {
@@ -73,7 +74,7 @@ function NewRegister() {
         throw new Error(data.message || "Google sign-in failed");
       }
 
-      login(data.user);
+      login({ ...data.user, token: data.token });
       toast.success("Google sign-in successful.");
       navigate("/dashboard");
     } catch (error) {
@@ -124,6 +125,20 @@ function NewRegister() {
                   placeholder="name@university.edu"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Phone (Optional)</label>
+              <div className="relative mt-2">
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <input
+                  type="tel"
+                  placeholder="+91XXXXXXXXXX"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
                 />
               </div>

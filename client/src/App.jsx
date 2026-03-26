@@ -1,60 +1,105 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
+import { Suspense, lazy, useEffect } from "react";
 import ProtectedRoute from "./components/ProtectedRoute";
+import LoadingScreen from "./components/LoadingScreen";
 import { startAutoUnlockEngine } from "./utils/autoUnlockEngine";
-import { useEffect } from "react";
-
-import Login from "./pages/Login";
-import MainLayout from "./components/MainLayout";
-import UploadedPapers from "./pages/UploadedPapers";
-import Dashboard from "./pages/Dashboard";
-import Scheduler from "./pages/Scheduler";
-import Uploader from "./pages/Uploader";
-import Monitoring from "./pages/Monitoring";
-import ExamAccess from "./pages/ExamAccess";
-import AuditLogs from "./pages/AuditLogs";
-import Settings from "./pages/Settings";
-import PrintRequest from "./pages/PrintRequest";
-import SetPrintLimit from "./pages/SetPrintLimit";
-import AdminApprovals from "./pages/AdminApprovals";
-import Register from "./pages/Register";
-import NewRegister from "./pages/NewRegister";
+import { startExamEscalationEngine } from "./utils/examEscalationEngine";
 import { AuthProvider } from "./context/AuthContext";
+
+const Login = lazy(() => import("./pages/Login"));
+const MainLayout = lazy(() => import("./components/MainLayout"));
+const UploadedPapers = lazy(() => import("./pages/UploadedPapers"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Scheduler = lazy(() => import("./pages/Scheduler"));
+const Uploader = lazy(() => import("./pages/Uploader"));
+const Monitoring = lazy(() => import("./pages/Monitoring"));
+const ExamAccess = lazy(() => import("./pages/ExamAccess"));
+const AuditLogs = lazy(() => import("./pages/AuditLogs"));
+const Settings = lazy(() => import("./pages/Settings"));
+const PrintRequest = lazy(() => import("./pages/PrintRequest"));
+const SetPrintLimit = lazy(() => import("./pages/SetPrintLimit"));
+const AdminApprovals = lazy(() => import("./pages/AdminApprovals"));
+const Centers = lazy(() => import("./pages/Centers"));
+const EscalationCenter = lazy(() => import("./pages/EscalationCenter"));
+const Register = lazy(() => import("./pages/Register"));
+const NewRegister = lazy(() => import("./pages/NewRegister"));
+const PaperSetterWorkspace = lazy(() => import("./pages/PaperSetterWorkspace"));
+const InvigilatorRequests = lazy(() => import("./pages/InvigilatorRequests"));
+const InvigilatorReadiness = lazy(() => import("./pages/InvigilatorReadiness"));
+const AdminSecurityCenter = lazy(() => import("./pages/AdminSecurityCenter"));
+const UserAccessManagement = lazy(() => import("./pages/UserAccessManagement"));
+const PaperRevisionHistory = lazy(() => import("./pages/PaperRevisionHistory"));
+const PaperQualityChecklist = lazy(() => import("./pages/PaperQualityChecklist"));
+const IncidentReport = lazy(() => import("./pages/IncidentReport"));
+
+function RouteLoader({ children, message }) {
+  return <Suspense fallback={<LoadingScreen message={message} />}>{children}</Suspense>;
+}
 
 function App() {
   useEffect(() => {
     startAutoUnlockEngine();
+    startExamEscalationEngine();
   }, []);
+
   return (
     <AuthProvider>
       <Router>
         <Toaster position="top-right" />
 
         <Routes>
-          {/* Auth */}
-          <Route path="/" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/newregister" element={<NewRegister />} />
+          <Route
+            path="/"
+            element={
+              <RouteLoader message="Loading secure sign-in...">
+                <Login />
+              </RouteLoader>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <RouteLoader message="Loading registration...">
+                <Register />
+              </RouteLoader>
+            }
+          />
+          <Route
+            path="/newregister"
+            element={
+              <RouteLoader message="Loading registration...">
+                <NewRegister />
+              </RouteLoader>
+            }
+          />
 
-          {/* Dashboard Layout */}
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute allowedRoles={["ADMIN", "PAPER_SETTER", "INVIGILATOR"]}>
-                <MainLayout />
+                <RouteLoader message="Loading workspace...">
+                  <MainLayout />
+                </RouteLoader>
               </ProtectedRoute>
             }
           >
+            <Route
+              index
+              element={
+                <RouteLoader message="Loading dashboard...">
+                  <Dashboard />
+                </RouteLoader>
+              }
+            />
 
-            {/* Default dashboard */}
-            <Route index element={<Dashboard />} />
-
-            {/* ADMIN ONLY */}
             <Route
               path="scheduler"
               element={
                 <ProtectedRoute allowedRoles={["ADMIN"]}>
-                  <Scheduler />
+                  <RouteLoader message="Loading scheduler...">
+                    <Scheduler />
+                  </RouteLoader>
                 </ProtectedRoute>
               }
             />
@@ -63,7 +108,9 @@ function App() {
               path="monitoring"
               element={
                 <ProtectedRoute allowedRoles={["ADMIN"]}>
-                  <Monitoring />
+                  <RouteLoader message="Loading monitoring...">
+                    <Monitoring />
+                  </RouteLoader>
                 </ProtectedRoute>
               }
             />
@@ -72,7 +119,9 @@ function App() {
               path="admin-approvals"
               element={
                 <ProtectedRoute allowedRoles={["ADMIN"]}>
-                  <AdminApprovals />
+                  <RouteLoader message="Loading approvals...">
+                    <AdminApprovals />
+                  </RouteLoader>
                 </ProtectedRoute>
               }
             />
@@ -81,17 +130,64 @@ function App() {
               path="uploaded-papers"
               element={
                 <ProtectedRoute allowedRoles={["ADMIN"]}>
-                  <UploadedPapers />
+                  <RouteLoader message="Loading uploaded papers...">
+                    <UploadedPapers />
+                  </RouteLoader>
                 </ProtectedRoute>
               }
             />
 
-            {/* PAPER SETTER */}
+            <Route
+              path="security-center"
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
+                  <RouteLoader message="Loading security center...">
+                    <AdminSecurityCenter />
+                  </RouteLoader>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="user-access"
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
+                  <RouteLoader message="Loading user access...">
+                    <UserAccessManagement />
+                  </RouteLoader>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="centers"
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
+                  <RouteLoader message="Loading centers...">
+                    <Centers />
+                  </RouteLoader>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="escalations"
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN", "PAPER_SETTER"]}>
+                  <RouteLoader message="Loading escalations...">
+                    <EscalationCenter />
+                  </RouteLoader>
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="set-limit"
               element={
                 <ProtectedRoute allowedRoles={["PAPER_SETTER"]}>
-                  <SetPrintLimit />
+                  <RouteLoader message="Loading print limits...">
+                    <SetPrintLimit />
+                  </RouteLoader>
                 </ProtectedRoute>
               }
             />
@@ -100,17 +196,53 @@ function App() {
               path="uploader"
               element={
                 <ProtectedRoute allowedRoles={["ADMIN", "PAPER_SETTER"]}>
-                  <Uploader />
+                  <RouteLoader message="Loading uploader...">
+                    <Uploader />
+                  </RouteLoader>
                 </ProtectedRoute>
               }
             />
 
-            {/* INVIGILATOR */}
+            <Route
+              path="my-papers"
+              element={
+                <ProtectedRoute allowedRoles={["PAPER_SETTER"]}>
+                  <RouteLoader message="Loading your papers...">
+                    <PaperSetterWorkspace />
+                  </RouteLoader>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="revision-history"
+              element={
+                <ProtectedRoute allowedRoles={["PAPER_SETTER"]}>
+                  <RouteLoader message="Loading revision history...">
+                    <PaperRevisionHistory />
+                  </RouteLoader>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="quality-checklist"
+              element={
+                <ProtectedRoute allowedRoles={["PAPER_SETTER"]}>
+                  <RouteLoader message="Loading quality checklist...">
+                    <PaperQualityChecklist />
+                  </RouteLoader>
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="print-request"
               element={
                 <ProtectedRoute allowedRoles={["INVIGILATOR"]}>
-                  <PrintRequest />
+                  <RouteLoader message="Loading print request...">
+                    <PrintRequest />
+                  </RouteLoader>
                 </ProtectedRoute>
               }
             />
@@ -119,17 +251,53 @@ function App() {
               path="exam-access"
               element={
                 <ProtectedRoute allowedRoles={["INVIGILATOR"]}>
-                  <ExamAccess />
+                  <RouteLoader message="Loading exam access...">
+                    <ExamAccess />
+                  </RouteLoader>
                 </ProtectedRoute>
               }
             />
 
-            {/* COMMON */}
+            <Route
+              path="my-requests"
+              element={
+                <ProtectedRoute allowedRoles={["INVIGILATOR"]}>
+                  <RouteLoader message="Loading your requests...">
+                    <InvigilatorRequests />
+                  </RouteLoader>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="readiness"
+              element={
+                <ProtectedRoute allowedRoles={["INVIGILATOR"]}>
+                  <RouteLoader message="Loading readiness board...">
+                    <InvigilatorReadiness />
+                  </RouteLoader>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="incident-report"
+              element={
+                <ProtectedRoute allowedRoles={["INVIGILATOR", "ADMIN"]}>
+                  <RouteLoader message="Loading incident reporting...">
+                    <IncidentReport />
+                  </RouteLoader>
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="audit-logs"
               element={
                 <ProtectedRoute allowedRoles={["ADMIN"]}>
-                  <AuditLogs />
+                  <RouteLoader message="Loading audit logs...">
+                    <AuditLogs />
+                  </RouteLoader>
                 </ProtectedRoute>
               }
             />
@@ -138,11 +306,12 @@ function App() {
               path="settings"
               element={
                 <ProtectedRoute allowedRoles={["ADMIN"]}>
-                  <Settings />
+                  <RouteLoader message="Loading settings...">
+                    <Settings />
+                  </RouteLoader>
                 </ProtectedRoute>
               }
             />
-
           </Route>
         </Routes>
       </Router>

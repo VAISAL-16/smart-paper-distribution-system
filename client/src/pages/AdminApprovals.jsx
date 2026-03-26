@@ -17,6 +17,7 @@ import {
 } from "recharts";
 import { addNotification } from "../utils/notificationService";
 import { getDbValue, setDbValue } from "../utils/dbStore";
+import { trackCenterEvent } from "../utils/centerTracker";
 
 const STATUS_COLORS = {
   FORWARDED_TO_ADMIN: "#f59e0b",
@@ -50,6 +51,20 @@ function AdminApprovals() {
 
     const approvedReq = updated.find((r) => r.id === id);
     if (approvedReq) {
+      await trackCenterEvent({
+        centerName: approvedReq.centerName,
+        requestEvent: {
+          requestId: approvedReq.id,
+          course: approvedReq.course,
+          examDate: approvedReq.examDate,
+          status: approvedReq.status,
+          requestedCopies: Number(approvedReq.requestedCopies) || 0,
+          maxAllowedCopies: Number(approvedReq.maxAllowedCopies) || 0,
+          approvedCopies: Number(approvedReq.approvedCopies) || 0,
+          requestedBy: approvedReq.requestedBy
+        }
+      });
+
       await addNotification(
         "INVIGILATOR",
         "Print Request Approved",
@@ -65,6 +80,20 @@ function AdminApprovals() {
 
     const rejectedReq = updated.find((r) => r.id === id);
     if (rejectedReq) {
+      await trackCenterEvent({
+        centerName: rejectedReq.centerName,
+        requestEvent: {
+          requestId: rejectedReq.id,
+          course: rejectedReq.course,
+          examDate: rejectedReq.examDate,
+          status: rejectedReq.status,
+          requestedCopies: Number(rejectedReq.requestedCopies) || 0,
+          maxAllowedCopies: Number(rejectedReq.maxAllowedCopies) || 0,
+          approvedCopies: Number(rejectedReq.approvedCopies) || 0,
+          requestedBy: rejectedReq.requestedBy
+        }
+      });
+
       await addNotification(
         "INVIGILATOR",
         "Print Request Rejected",

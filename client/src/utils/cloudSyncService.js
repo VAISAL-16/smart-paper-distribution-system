@@ -7,7 +7,8 @@ const TRACKED_KEYS = [
   "examPapers",
   "printRequests",
   "auditLogs",
-  "notifications"
+  "notifications",
+  "systemConfig"
 ];
 
 const readJson = (key, fallback) => {

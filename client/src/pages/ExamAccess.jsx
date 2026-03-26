@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { addAuditLog } from "../utils/auditLogger";
 import { getDbValue } from "../utils/dbStore";
+import { trackCenterEvent } from "../utils/centerTracker";
 
 function ExamAccess() {
+  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
   const departments = ["CS", "ECE", "EEE", "EIE", "MECH", "AIDS", "IT"];
   const [isLocked, setIsLocked] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
@@ -17,9 +19,10 @@ function ExamAccess() {
   const [selectedExamId, setSelectedExamId] = useState("");
   const [notice, setNotice] = useState({ type: "", message: "" });
   const [debugInfo, setDebugInfo] = useState(null);
+  const [timingInfo, setTimingInfo] = useState(null);
+  const [allowedMeters, setAllowedMeters] = useState(100);
 
   const maxPrintLimit = 5;
-  const allowedMeters = 100;
 
   const setError = (message) => setNotice({ type: "error", message });
   const setSuccess = (message) => setNotice({ type: "success", message });
@@ -71,6 +74,15 @@ function ExamAccess() {
   }, []);
 
   useEffect(() => {
+    const loadConfig = async () => {
+      const configRows = await getDbValue("systemConfig", []);
+      const meters = Number(configRows?.[0]?.geoFenceMeters) || 100;
+      setAllowedMeters(meters);
+    };
+    loadConfig();
+  }, []);
+
+  useEffect(() => {
     const loadPapers = async () => {
       const papers = await getDbValue("examPapers", []);
       setExamPapers(papers);
@@ -96,11 +108,22 @@ function ExamAccess() {
       setAvailablePaper(null);
       setAccessDenied(false);
       setDebugInfo(null);
+      setTimingInfo(null);
       return;
     }
 
     const selectedExam = scheduledExams.find((e) => e.id === selectedExamId);
     const selectedExamCode = String(selectedExam?.code || "").toUpperCase();
+    const examStart = selectedExam?.date && selectedExam?.time
+      ? new Date(`${selectedExam.date}T${selectedExam.time}`)
+      : null;
+    const unlockAt = examStart ? new Date(examStart.getTime() - 5 * 60 * 1000) : null;
+    const now = new Date();
+    setTimingInfo({
+      examStart,
+      unlockAt,
+      isBeforeUnlock: unlockAt ? now < unlockAt : false
+    });
 
     const papers = examPapers;
     const releasedPapers = papers.filter((paper) => paper.status === "RELEASED");
@@ -144,7 +167,12 @@ function ExamAccess() {
     setAccessDenied(!matched);
 
     if (!matched) {
-      setError("No released paper is assigned to this location.");
+      if (unlockAt && now < unlockAt) {
+        setInfo(`Paper access opens at ${unlockAt.toLocaleString()} (5 minutes before exam).`);
+        setAccessDenied(false);
+      } else {
+        setError("No released paper is assigned to this location.");
+      }
     }
 
     setDebugInfo({
@@ -256,7 +284,7 @@ function ExamAccess() {
     setValidating(false);
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     if (printCount >= maxPrintLimit) {
       setError("Print limit exceeded.");
       addAuditLog(
@@ -270,11 +298,20 @@ function ExamAccess() {
     window.print();
     setPrintCount((prev) => prev + 1);
     setSuccess(`Printed successfully (${printCount + 1}/${maxPrintLimit})`);
-    addAuditLog(
+    await addAuditLog(
       "Invigilator",
       `Printed Copy (${printCount + 1})`,
       availablePaper?.id || "UNKNOWN_PAPER"
     );
+    await trackCenterEvent({
+      centerName: availablePaper?.locationName,
+      printEvent: {
+        paperId: availablePaper?.id,
+        printedBy: currentUser?.email || "unknown@local",
+        copies: 1,
+        printedAt: new Date().toISOString()
+      }
+    });
   };
 
   useEffect(() => {
@@ -362,6 +399,13 @@ function ExamAccess() {
       {notice.message && (
         <div className={`border rounded-xl p-3 text-sm ${noticeStyle}`}>
           {notice.message}
+        </div>
+      )}
+
+      {timingInfo?.unlockAt && (
+        <div className="border border-slate-200 rounded-xl p-3 text-xs text-slate-600 bg-slate-50">
+          Access Window: {timingInfo.unlockAt.toLocaleString()} to exam start at{" "}
+          {timingInfo.examStart?.toLocaleString()}
         </div>
       )}
 

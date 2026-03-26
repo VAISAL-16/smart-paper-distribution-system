@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { addNotification } from "../utils/notificationService";
 import { addAuditLog } from "../utils/auditLogger";
 import { getDbValue, setDbValue } from "../utils/dbStore";
+import { trackCenterEvent } from "../utils/centerTracker";
 
 
 function SetPrintLimit() {
@@ -49,6 +50,18 @@ function SetPrintLimit() {
   await setDbValue("printRequests", updated);
 
   const selectedRequest = updated.find((r) => r.id === id);
+  await trackCenterEvent({
+    centerName: selectedRequest?.centerName,
+    requestEvent: {
+      requestId: selectedRequest?.id,
+      course: selectedRequest?.course,
+      examDate: selectedRequest?.examDate,
+      status: selectedRequest?.status,
+      requestedCopies: Number(selectedRequest?.requestedCopies) || 0,
+      maxAllowedCopies: Number(selectedRequest?.maxAllowedCopies) || 0,
+      requestedBy: selectedRequest?.requestedBy
+    }
+  });
 
   // 🔥 Audit Logs
   await addAuditLog(

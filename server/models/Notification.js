@@ -12,6 +12,9 @@ const notificationSchema = new mongoose.Schema(
   { timestamps: true, strict: false }
 );
 
+notificationSchema.index({ role: 1, read: 1, createdAt: -1 });
+notificationSchema.index({ severity: 1, read: 1 }, { sparse: true });
+
 const Notification =
   mongoose.models.Notification ||
   mongoose.model("Notification", notificationSchema, "notifications");

@@ -11,6 +11,7 @@ import { addAuditLog } from "../utils/auditLogger";
 import { addNotification } from "../utils/notificationService";
 import { isOfflineModeEnabled } from "../utils/cloudSyncService";
 import { getDbValue, setDbValue } from "../utils/dbStore";
+import { trackCenterEvent } from "../utils/centerTracker";
 
 function MapClickHandler({ onPickLocation }) {
   useMapEvents({
@@ -153,9 +154,11 @@ function Uploader() {
       setTimeout(async () => {
         const paperId = generatePaperId();
         const hash = generateHash();
-        const releaseTime = new Date(
-          `${selectedExam.date}T${selectedExam.time}`
-        ).toISOString();
+        const configRows = await getDbValue("systemConfig", []);
+        const unlockLeadMinutes = Number(configRows?.[0]?.unlockLeadMinutes) || 5;
+        const examStartTime = new Date(`${selectedExam.date}T${selectedExam.time}`);
+        const unlockTime = new Date(examStartTime.getTime() - unlockLeadMinutes * 60 * 1000);
+        const releaseTime = unlockTime.toISOString();
 
         const newPaper = {
           id: paperId,
@@ -178,6 +181,19 @@ function Uploader() {
         };
 
         await setDbValue("examPapers", [...existingPapers, newPaper]);
+        await trackCenterEvent({
+          centerName: selectedLocation.name,
+          paperEvent: {
+            paperId: newPaper.id,
+            examId: newPaper.examId,
+            course: newPaper.course,
+            subject: newPaper.subject,
+            status: newPaper.status,
+            uploadedBy: newPaper.uploadedBy,
+            uploadedAt: newPaper.uploadedAt,
+            releaseTime: newPaper.releaseTime
+          }
+        });
 
         await addAuditLog("Paper Setter", "Exam Paper Uploaded", selectedExam.code);
         await addAuditLog(
@@ -193,7 +209,7 @@ function Uploader() {
           `${selectedExam.code} uploaded and encrypted`
         );
 
-        setSuccess("Paper uploaded with map-selected location. Allowed radius is 100m.");
+        setSuccess(`Paper uploaded. Access opens ${unlockLeadMinutes} minutes before exam start.`);
         setStep("complete");
       }, 2000);
     }, 1500);

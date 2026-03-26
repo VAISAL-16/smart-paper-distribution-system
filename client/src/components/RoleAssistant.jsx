@@ -5,17 +5,17 @@ import { getDbValue, setDbValue } from "../utils/dbStore";
 
 const initialPromptByRole = {
   ADMIN:
-    "Admin assistant ready. You can ask naturally, for example: show pending approvals, open scheduler, sync data, switch to cloud mode.",
+    "Admin assistant ready. You can ask naturally, for example: open security center, open user access, show pending approvals, sync data, switch to cloud mode.",
   PAPER_SETTER:
-    "Setter assistant ready. Ask naturally: open uploader, show my setter stats, sync data, switch mode.",
+    "Setter assistant ready. Ask naturally: open uploader, open revision history, open quality checklist, show my setter stats, sync data.",
   INVIGILATOR:
-    "Invigilator assistant ready. Ask naturally: open exam access, show my request status, sync data, switch mode."
+    "Invigilator assistant ready. Ask naturally: open exam access, open my requests, open readiness board, sync data, switch mode."
 };
 
 const commandHintsByRole = {
-  ADMIN: ["show pending approvals", "open admin approvals", "sync data", "switch to offline", "show analytics"],
-  PAPER_SETTER: ["open uploader", "open set limit", "show setter summary", "sync data", "switch to cloud"],
-  INVIGILATOR: ["open exam access", "open print request", "show my requests", "sync data", "switch to offline"]
+  ADMIN: ["open security center", "open user access", "open admin approvals", "show analytics", "sync data"],
+  PAPER_SETTER: ["open uploader", "open revision history", "open quality checklist", "open set limit", "show setter summary"],
+  INVIGILATOR: ["open exam access", "open my requests", "open readiness board", "show my requests", "sync data"]
 };
 
 const tokenize = (text) =>
@@ -51,18 +51,26 @@ function RoleAssistant({ activeRole, isOfflineMode, setOfflineMode, onSyncNow })
       { keys: ["monitoring", "monitor"], path: "/dashboard/monitoring", label: "Monitoring" },
       { keys: ["approval", "approvals"], path: "/dashboard/admin-approvals", label: "Admin Approvals" },
       { keys: ["uploaded", "paper list"], path: "/dashboard/uploaded-papers", label: "Uploaded Papers" },
+      { keys: ["security center", "security"], path: "/dashboard/security-center", label: "Security Center" },
+      { keys: ["user access", "users"], path: "/dashboard/user-access", label: "User Access" },
+      { keys: ["incident report", "incident"], path: "/dashboard/incident-report", label: "Incident Report" },
       { keys: ["audit", "logs"], path: "/dashboard/audit-logs", label: "Audit Logs" },
       { keys: ["settings", "config"], path: "/dashboard/settings", label: "Settings" }
     ],
     PAPER_SETTER: [
       { keys: ["dashboard", "overview"], path: "/dashboard", label: "Dashboard" },
       { keys: ["uploader", "upload"], path: "/dashboard/uploader", label: "Uploader" },
-      { keys: ["set limit", "limit"], path: "/dashboard/set-limit", label: "Set Print Limit" }
+      { keys: ["set limit", "limit"], path: "/dashboard/set-limit", label: "Set Print Limit" },
+      { keys: ["revision history", "revision"], path: "/dashboard/revision-history", label: "Revision History" },
+      { keys: ["quality checklist", "checklist"], path: "/dashboard/quality-checklist", label: "Quality Checklist" }
     ],
     INVIGILATOR: [
       { keys: ["dashboard", "overview"], path: "/dashboard", label: "Dashboard" },
       { keys: ["exam access", "access"], path: "/dashboard/exam-access", label: "Exam Access" },
-      { keys: ["print request", "request"], path: "/dashboard/print-request", label: "Print Request" }
+      { keys: ["print request", "request"], path: "/dashboard/print-request", label: "Print Request" },
+      { keys: ["my requests", "request status"], path: "/dashboard/my-requests", label: "My Requests" },
+      { keys: ["readiness", "readiness board", "center readiness"], path: "/dashboard/readiness", label: "Center Readiness" },
+      { keys: ["incident report", "incident"], path: "/dashboard/incident-report", label: "Incident Report" }
     ]
   });
 
@@ -79,11 +87,11 @@ function RoleAssistant({ activeRole, isOfflineMode, setOfflineMode, onSyncNow })
   const showRoleCapabilities = () => {
     const lines = {
       ADMIN:
-        "I can open admin pages, sync data, switch offline/cloud mode, clear notifications, and show approval analytics.",
+        "I can open security, user access, approvals, audit, settings, and incident pages, sync data, switch offline/cloud mode, clear notifications, and show analytics.",
       PAPER_SETTER:
-        "I can open uploader/set-limit, sync data, switch offline/cloud mode, and show setter request summary.",
+        "I can open uploader, set-limit, revision-history, quality-checklist, sync data, switch offline/cloud mode, and show setter summary.",
       INVIGILATOR:
-        "I can open exam-access/print-request, sync data, switch offline/cloud mode, and show your request summary."
+        "I can open exam-access, print-request, my-requests, readiness, incident-report, sync data, switch offline/cloud mode, and show your request summary."
     };
     addBotMessage(lines[activeRole] || "I can navigate pages, sync, switch mode, and summarize data.");
   };

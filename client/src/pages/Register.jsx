@@ -14,6 +14,8 @@ import { motion } from "motion/react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 function Register() {
     const navigate = useNavigate();
     const { login } = useAuth();
@@ -26,7 +28,7 @@ function Register() {
         role: ""
     });
 
-    const handleRegister = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
         const { name, email, password, role } = formData;
 
@@ -35,11 +37,22 @@ function Register() {
             return;
         }
 
-        // Simulate API registration
-        const userData = { email, role, name };
-        login(userData);
-        toast.success("Account created successfully!");
-        navigate("/dashboard");
+        try {
+            const response = await fetch(`${API_BASE}/api/auth/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, password, role })
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || "Registration failed");
+            }
+            login({ ...data.user, token: data.token });
+            toast.success("Account created successfully!");
+            navigate("/dashboard");
+        } catch (error) {
+            toast.error(error.message || "Registration failed");
+        }
     };
 
     return (

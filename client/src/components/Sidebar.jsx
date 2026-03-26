@@ -11,6 +11,8 @@ import {
   ChevronRight,
   ShieldAlert,
   FileText,
+  Building2,
+  AlertTriangle,
   X
 } from "lucide-react";
 
@@ -23,14 +25,24 @@ function Sidebar({ isOpen, onClose }) {
     { id: "", label: "Overview", icon: LayoutDashboard, roles: ["ADMIN", "PAPER_SETTER", "INVIGILATOR"] },
     { id: "scheduler", label: "Schedule Exams", icon: Calendar, roles: ["ADMIN"] },
     { id: "uploader", label: "Upload Papers", icon: Upload, roles: ["PAPER_SETTER"] },
+    { id: "my-papers", label: "My Papers", icon: FileText, roles: ["PAPER_SETTER"] },
+    { id: "revision-history", label: "Revision History", icon: History, roles: ["PAPER_SETTER"] },
+    { id: "quality-checklist", label: "Quality Checklist", icon: ShieldCheck, roles: ["PAPER_SETTER"] },
     { id: "monitoring", label: "Live Monitoring", icon: Activity, roles: ["ADMIN"] },
     { id: "exam-access", label: "Exam Hall Access", icon: ShieldCheck, roles: ["INVIGILATOR"] },
+    { id: "my-requests", label: "My Requests", icon: FileText, roles: ["INVIGILATOR"] },
+    { id: "readiness", label: "Center Readiness", icon: Activity, roles: ["INVIGILATOR"] },
+    { id: "incident-report", label: "Incident Report", icon: AlertTriangle, roles: ["INVIGILATOR", "ADMIN"] },
     { id: "audit-logs", label: "Audit Logs", icon: History, roles: ["ADMIN"] },
     { id: "settings", label: "System Config", icon: Settings, roles: ["ADMIN"] },
     { id: "print-request", label: "Request Papers", icon: FileText, roles: ["INVIGILATOR"] },
     { id: "set-limit", label: "Set Print Limit", icon: Settings, roles: ["PAPER_SETTER"] },
     { id: "admin-approvals", label: "Admin Approvals", icon: ShieldCheck, roles: ["ADMIN"] },
-    { id: "uploaded-papers", label: "Uploaded Papers", icon: FileText, roles: ["ADMIN"] }
+    { id: "uploaded-papers", label: "Uploaded Papers", icon: FileText, roles: ["ADMIN"] },
+    { id: "security-center", label: "Security Center", icon: ShieldAlert, roles: ["ADMIN"] },
+    { id: "user-access", label: "User Access", icon: ShieldCheck, roles: ["ADMIN"] },
+    { id: "centers", label: "Center Master", icon: Building2, roles: ["ADMIN"] },
+    { id: "escalations", label: "Escalation Center", icon: AlertTriangle, roles: ["ADMIN", "PAPER_SETTER"] }
   ];
 
   const filteredItems = menuItems.filter((item) => item.roles.includes(activeRole));
@@ -39,7 +51,7 @@ function Sidebar({ isOpen, onClose }) {
     localStorage.removeItem("userRole");
     localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("user");
-    navigate("/");
+    navigate("/", { replace: true });
   };
 
   const handleNavigate = (path) => {
